@@ -30,42 +30,27 @@
     update_cache: yes
   register: virtualbox_installed
 
-- name: run vboxdrv setup
-  shell: /usr/lib/virtualbox/vboxdrv.sh setup
+- name: get kernel version
+  shell: uname -r
+  register: virtualbox_kernel_version
+  changed_when: false
+  when: virtualbox_installed.changed
+
+- name: install kernel-devel
+  yum:
+    name: "kernel-devel-{{ virtualbox_kernel_version.stdout }}"
+    state: present
+    enablerepo: virtualbox
+    update_cache: yes
+  register: virtualbox_installed
   when: virtualbox_installed.changed
   ignore_errors: virutalbox_role_debug
 
-# - name: set ssh configuration
-#   template: src=templates/ssh_config.j2 dest=/etc/ssh/ssh_config owner=root group=root
-#
-# - name: set sshd configuration
-#   template: src=templates/sshd_config.j2 dest=/etc/ssh/sshd_config owner=root group=root
-#   notify:
-#     - sshd restart
-#
-# - name: add keyboard interactive group
-#   group: name={{ ssh_keyboard_interactive_group }} system=true state=present
-#   when: ssh_keyboard_interactive_group is defined and ssh_keyboard_interactive_group != ""
-#
-# - name: Ensure that sshd is running
-#   service: name=sshd state=started enabled=yes
-#   ignore_errors: ssh_role_debug
-#
-# - name: create ssh firewall rules
-#   template: src=templates/1002-ssh.conf.j2 dest=/etc/ferm/ferm.d/1002-ssh.conf owner=root group=root
-#   notify:
-#     - ferm restart
-#
-# - name: create mosh firewall rules
-#   template: src=templates/1004-mosh.conf.j2 dest=/etc/ferm/ferm.d/1004-mosh.conf owner=root group=root
-#   notify:
-#     - ferm restart
-#
-# - name: create lastlog file
-#   file:
-#     path: /var/log/lastlog
-#     mode: 0644
-#     group: utmp
-#     state: file
-#   ignore_errors: ssh_role_debug
-#
+- name: run vboxdrv setup
+  shell: >
+    export KERN_DIR="/usr/src/kernels/$(uname -r)" && \
+    /usr/lib/virtualbox/vboxdrv.sh setup
+    args:
+      executable: /bin/bash
+  when: virtualbox_installed.changed
+  ignore_errors: virutalbox_role_debug

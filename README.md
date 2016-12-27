@@ -11,13 +11,6 @@
 
 virtualbox role
 
-## Role Variables
-
-Available variables are listed below, along with default values:
-
-```yaml
-```
-
 ## Example Playbook
 
 ```yaml

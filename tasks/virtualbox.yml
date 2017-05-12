@@ -21,12 +21,22 @@
     owner: root
     group: root
     mode: 0644
+  register: virtualbox_repository
+
+
+- name: add virtualbox repository gpg key
+  rpm_key:
+    state: present
+    key: https://www.virtualbox.org/download/oracle_vbox.asc
+
+- name: yum makecache
+  shell: yum -q -y makecache fast warn=no
+  # when: virtualbox_repository | changed
 
 - name: install virtualbox
   yum:
     name: VirtualBox-5.1
     state: present
-    enablerepo: virtualbox
     update_cache: yes
   register: virtualbox_installed
 
@@ -40,7 +50,6 @@
   yum:
     name: "kernel-devel-{{ virtualbox_kernel_version.stdout }}"
     state: present
-    enablerepo: virtualbox
     update_cache: yes
   register: virtualbox_installed
   when: virtualbox_installed.changed

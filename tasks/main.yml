@@ -1,4 +1,4 @@
 ---
 
-- include: virtualbox.yml
+- include_tasks: virtualbox.yml
   when: ansible_os_family == "RedHat"

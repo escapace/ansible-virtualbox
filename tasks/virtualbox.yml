@@ -23,7 +23,6 @@
     mode: 0644
   register: virtualbox_repository
 
-
 - name: add virtualbox repository gpg key
   rpm_key:
     state: present
@@ -31,11 +30,11 @@
 
 - name: yum makecache
   shell: yum -q -y makecache fast warn=no
-  # when: virtualbox_repository | changed
+  when: virtualbox_repository | changed
 
-- name: install virtualbox
+- name: install VirtualBox
   yum:
-    name: VirtualBox-5.1
+    name: VirtualBox-{{virtualbox_version}}
     state: present
     update_cache: yes
   register: virtualbox_installed
@@ -51,15 +50,26 @@
     name: "kernel-devel-{{ virtualbox_kernel_version.stdout }}"
     state: present
     update_cache: yes
-  register: virtualbox_installed
   when: virtualbox_installed.changed
-  ignore_errors: virutalbox_role_debug
+  ignore_errors: True
+  register: virtualbox_kernel
+
+- name: install kernel-devel
+  yum:
+    name: "kernel-devel"
+    state: present
+  when: virtualbox_kernel|failed
 
 - name: run vboxdrv setup
   shell: >
-    export KERN_DIR="/usr/src/kernels/$(uname -r)" && \
+    export KERN_DIR="/usr/src/kernels/$(rpm -q kernel-devel | head -n 1 | cut -c 14-)" && \
     /usr/lib/virtualbox/vboxdrv.sh setup
     args:
       executable: /bin/bash
   when: virtualbox_installed.changed
-  ignore_errors: virutalbox_role_debug
+  register: virtualbox_vboxdrv
+  ignore_errors: True
+
+- name: failed to install VritualBox
+  fail: msg="failed to install VritualBox"
+  when: ((virtualbox_vboxdrv|failed) and (virtualbox_role_debug|bool == false))

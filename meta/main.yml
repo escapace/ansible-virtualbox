@@ -1,7 +1,6 @@
 galaxy_info:
-  author: Mark Milstein
   description: virtualbox role
-  issue_tracker_url: https://github.com/epiloque/ansible-virtualbox/issues
+  issue_tracker_url: https://github.com/escapace/ansible-virtualbox/issues
   license: Apache-2.0
   min_ansible_version: 2.4
   github_branch: master
@@ -11,8 +10,8 @@ galaxy_info:
     - 7
 
   galaxy_tags:
-  - epiloque
+  - escapace
   - virtualbox
 
 dependencies:
-   - { role: epiloque.epel }
+   - { role: escapace.epel }

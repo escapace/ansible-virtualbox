@@ -3,5 +3,5 @@
 ```yaml
 - hosts: servers
   roles:
-    - epiloque.virtualbox
+    - escapace.virtualbox
 ```

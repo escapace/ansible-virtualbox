@@ -8,4 +8,4 @@
   vars:
     virtualbox_role_debug: true
   roles:
-  - role: epiloque.virtualbox
+  - role: escapace.virtualbox

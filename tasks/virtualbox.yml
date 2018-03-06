@@ -67,10 +67,10 @@
     /usr/lib/virtualbox/vboxdrv.sh setup
     args:
       executable: /bin/bash
+      become: True
   when: virtualbox_installed.changed
   register: virtualbox_vboxdrv
   ignore_errors: False
-  become: True
 
 - name: Check if extension pack is already installed
   shell: "VBoxManage list extpacks"

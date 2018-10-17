@@ -1,18 +1,20 @@
 ---
 
 - name: install virtualbox dependencies
-  action: "{{ ansible_pkg_mgr }} name={{ item }} state=present"
-  with_items:
-    - binutils
-    - gcc
-    - make
-    - patch
-    - libgomp
-    - glibc-headers
-    - glibc-devel
-    - kernel-headers
-    - kernel-devel
-    - dkms
+  package:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - binutils
+      - gcc
+      - make
+      - patch
+      - libgomp
+      - glibc-headers
+      - glibc-devel
+      - kernel-headers
+      - kernel-devel
+      - dkms
 
 - name: add virtualbox repository
   copy:
@@ -30,7 +32,7 @@
 
 - name: yum makecache
   shell: yum -q -y makecache fast warn=no
-  when: virtualbox_repository | changed
+  when: virtualbox_repository is changed
 
 - name: install VirtualBox
   yum:
@@ -58,7 +60,7 @@
   yum:
     name: "kernel-devel"
     state: present
-  when: virtualbox_kernel|failed
+  when: virtualbox_kernel is failed
 
 - name: run vboxdrv setup
   shell: >
@@ -84,4 +86,4 @@
 
 - name: failed to install VritualBox
   fail: msg="failed to install VritualBox"
-  when: ((virtualbox_vboxdrv|failed) and (virtualbox_role_debug|bool == false))
+  when: ((virtualbox_vboxdrv is failed) and (virtualbox_role_debug|bool == false))

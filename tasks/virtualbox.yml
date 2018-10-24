@@ -12,8 +12,6 @@
       - libgomp
       - glibc-headers
       - glibc-devel
-      - kernel-headers
-      - kernel-devel
       - dkms
 
 - name: add virtualbox repository
@@ -34,40 +32,28 @@
   shell: yum -q -y makecache fast warn=no
   when: virtualbox_repository is changed
 
-- name: install VirtualBox
-  yum:
-    name: VirtualBox-{{virtualbox_version}}
-    state: present
-    update_cache: yes
-  register: virtualbox_installed
-
 - name: get kernel version
   shell: uname -r
   register: virtualbox_kernel_version
   changed_when: false
-  when: virtualbox_installed.changed
 
-- name: install kernel-devel
+- name: install kernel-devel and kernel-headers
   yum:
-    name: "kernel-devel-{{ virtualbox_kernel_version.stdout }}"
+    name: "{{ packages }}"
     state: present
-    update_cache: yes
-  when: virtualbox_installed.changed
-  ignore_errors: True
-  register: virtualbox_kernel
+  vars:
+    packages:
+      - "kernel-devel-{{ virtualbox_kernel_version.stdout }}"
+      - "kernel-headers-{{ virtualbox_kernel_version.stdout }}"
 
-- name: install kernel-devel
+- name: install VirtualBox
   yum:
-    name: "kernel-devel"
+    name: VirtualBox-{{virtualbox_version}}
     state: present
-  when: virtualbox_kernel is failed
+  register: virtualbox_installed
 
 - name: run vboxdrv setup
-  shell: >
-    export KERN_DIR="/usr/src/kernels/$(rpm -q kernel-devel | head -n 1 | cut -c 14-)" && \
-    /usr/lib/virtualbox/vboxdrv.sh setup
-    args:
-      executable: /bin/bash
+  shell: /usr/lib/virtualbox/vboxdrv.sh setup
   when: virtualbox_installed.changed
   register: virtualbox_vboxdrv
   ignore_errors: True
@@ -77,11 +63,22 @@
   register: virtualbox_extpack_list
 
 - name: Download VirtualBox extension pack
-  shell: "cd /tmp/ &&  wget http://download.virtualbox.org/virtualbox/{{virtualbox_version}}.2/Oracle_VM_VirtualBox_Extension_Pack-{{virtualbox_version}}.28.vbox-extpack"
+  get_url:
+    validate_certs: yes
+    url: "{{ virtualbox_extension_pack_url }}"
+    dest: "/tmp"
+    mode: 0700
   when: 'virtualbox_extpack_list.stdout == "Extension Packs: 0"'
+  register: virtualbox_extension_pack
 
 - name: Install VirtualBox extension pack
-  shell: "VBoxManage extpack install --replace /tmp/Oracle_VM_VirtualBox_Extension_Pack-{{virtualbox_version}}.28.vbox-extpack"
+  shell: >
+    echo y | \
+    VBoxManage extpack install --replace \
+    {{ virtualbox_extension_pack.dest }} \
+    && rm -f "{{ virtualbox_extension_pack.dest }}"
+  args:
+    executable: /bin/bash
   when: 'virtualbox_extpack_list.stdout == "Extension Packs: 0"'
 
 - name: failed to install VritualBox

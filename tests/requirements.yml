@@ -1,5 +1,0 @@
-- src: escapace.provision_docker
-  name: provision_docker
-
-- src: escapace.epel
-  name: escapace.epel

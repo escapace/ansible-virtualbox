@@ -28,17 +28,17 @@
     state: present
     key: https://www.virtualbox.org/download/oracle_vbox.asc
 
-- name: yum makecache
-  shell: yum -q -y makecache fast warn=no
-  when: virtualbox_repository is changed
-
 - name: get kernel version
-  shell: uname -r
+  shell: |
+    set -o pipefail
+    uname -r | egrep -o '^[0-9]*\.[0-9]*\.[0-9]*'
+  args:
+    executable: /bin/bash
   register: virtualbox_kernel_version
   changed_when: false
 
 - name: install kernel-devel and kernel-headers
-  yum:
+  package:
     name: "{{ packages }}"
     state: present
   vars:
@@ -47,8 +47,8 @@
       - "kernel-headers-{{ virtualbox_kernel_version.stdout }}"
 
 - name: install VirtualBox
-  yum:
-    name: VirtualBox-{{virtualbox_version}}
+  package:
+    name: VirtualBox-{{ virtualbox_version }}
     state: present
   register: virtualbox_installed
 
@@ -72,15 +72,19 @@
   register: virtualbox_extension_pack
 
 - name: Install VirtualBox extension pack
-  shell: >
-    echo y | \
-    VBoxManage extpack install --replace \
-    {{ virtualbox_extension_pack.dest }} \
-    && rm -f "{{ virtualbox_extension_pack.dest }}"
+  shell: |
+    set -o pipefail
+    echo y | VBoxManage extpack install --replace {{ virtualbox_extension_pack.dest }}
+    rm -f "{{ virtualbox_extension_pack.dest }}"
   args:
     executable: /bin/bash
   when: 'virtualbox_extpack_list.stdout == "Extension Packs: 0"'
 
+- name: install vagrant
+  dnf:
+    name: "https://releases.hashicorp.com/vagrant/{{ virtualbox_vagrant_version }}/vagrant_{{ virtualbox_vagrant_version }}_x86_64.rpm"
+    state: present
+
 - name: failed to install VritualBox
   fail: msg="failed to install VritualBox"
-  when: ((virtualbox_vboxdrv is failed) and (virtualbox_role_debug|bool == false))
+  when: ((virtualbox_vboxdrv is failed) and (not virtualbox_role_debug|bool))

@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  vars:
-    virtualbox_role_debug: true
-  roles:
-    - role: escapace.virtualbox

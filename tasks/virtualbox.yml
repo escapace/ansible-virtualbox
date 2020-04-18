@@ -13,6 +13,7 @@
       - glibc-headers
       - glibc-devel
       - dkms
+      - wget
 
 - name: add virtualbox repository
   copy:

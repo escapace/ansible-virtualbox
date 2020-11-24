@@ -81,9 +81,18 @@
     executable: /bin/bash
   when: 'virtualbox_extpack_list.stdout == "Extension Packs: 0"'
 
+- name: hashicorp repo
+  get_url:
+    validate_certs: yes
+    url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+    dest: "/etc/yum.repos.d/hashicorp.repo"
+    owner: root
+    group: root
+    mode: 0644
+
 - name: install vagrant
   dnf:
-    name: "https://releases.hashicorp.com/vagrant/{{ virtualbox_vagrant_version }}/vagrant_{{ virtualbox_vagrant_version }}_x86_64.rpm"
+    name: vagrant
     state: present
 
 - name: failed to install VritualBox

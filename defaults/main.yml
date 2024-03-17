@@ -1,4 +1,4 @@
 ---
 
 virtualbox_version: 6.1
-virtualbox_extension_pack_url: "https://download.virtualbox.org/virtualbox/6.1.26/Oracle_VM_VirtualBox_Extension_Pack-6.1.26.vbox-extpack"
+virtualbox_extension_pack_url: https://download.virtualbox.org/virtualbox/6.1.26/Oracle_VM_VirtualBox_Extension_Pack-6.1.26.vbox-extpack

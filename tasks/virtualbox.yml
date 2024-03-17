@@ -1,7 +1,6 @@
 ---
-
 - name: install virtualbox dependencies
-  package:
+  ansible.builtin.package:
     name: "{{ packages }}"
   vars:
     packages:
@@ -16,21 +15,21 @@
       - wget
 
 - name: add virtualbox repository
-  copy:
+  ansible.builtin.copy:
     src: files/virtualbox.repo
     dest: /etc/yum.repos.d/virtualbox.repo
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   register: virtualbox_repository
 
 - name: add virtualbox repository gpg key
-  rpm_key:
+  ansible.builtin.rpm_key:
     state: present
     key: https://www.virtualbox.org/download/oracle_vbox.asc
 
 - name: get kernel version
-  shell: |
+  ansible.builtin.shell: |
     set -o pipefail
     uname -r | egrep -o '^[0-9]*\.[0-9]*\.[0-9]*'
   args:
@@ -39,41 +38,41 @@
   changed_when: false
 
 - name: install kernel-devel and kernel-headers
-  package:
+  ansible.builtin.package:
     name: "{{ packages }}"
     state: present
   vars:
     packages:
-      - "kernel-devel-{{ virtualbox_kernel_version.stdout }}"
-      - "kernel-headers-{{ virtualbox_kernel_version.stdout }}"
+      - kernel-devel-{{ virtualbox_kernel_version.stdout }}
+      - kernel-headers-{{ virtualbox_kernel_version.stdout }}
 
 - name: install VirtualBox
-  package:
+  ansible.builtin.package:
     name: VirtualBox-{{ virtualbox_version }}
     state: present
   register: virtualbox_installed
 
 - name: run vboxdrv setup
-  shell: /usr/lib/virtualbox/vboxdrv.sh setup
+  ansible.builtin.shell: /usr/lib/virtualbox/vboxdrv.sh setup
   when: virtualbox_installed.changed
   register: virtualbox_vboxdrv
-  ignore_errors: True
+  ignore_errors: true
 
 - name: Check if extension pack is already installed
-  shell: "VBoxManage list extpacks"
+  ansible.builtin.shell: VBoxManage list extpacks
   register: virtualbox_extpack_list
 
 - name: Download VirtualBox extension pack
-  get_url:
-    validate_certs: yes
+  ansible.builtin.get_url:
+    validate_certs: true
     url: "{{ virtualbox_extension_pack_url }}"
-    dest: "/tmp"
-    mode: 0700
+    dest: /tmp
+    mode: "0700"
   when: 'virtualbox_extpack_list.stdout == "Extension Packs: 0"'
   register: virtualbox_extension_pack
 
 - name: Install VirtualBox extension pack
-  shell: |
+  ansible.builtin.shell: |
     set -o pipefail
     echo y | VBoxManage extpack install --replace {{ virtualbox_extension_pack.dest }}
     rm -f "{{ virtualbox_extension_pack.dest }}"
@@ -82,19 +81,20 @@
   when: 'virtualbox_extpack_list.stdout == "Extension Packs: 0"'
 
 - name: hashicorp repo
-  get_url:
-    validate_certs: yes
+  ansible.builtin.get_url:
+    validate_certs: true
     url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-    dest: "/etc/yum.repos.d/hashicorp.repo"
+    dest: /etc/yum.repos.d/hashicorp.repo
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 - name: install vagrant
-  dnf:
+  ansible.builtin.dnf:
     name: vagrant
     state: present
 
 - name: failed to install VritualBox
-  fail: msg="failed to install VritualBox"
+  ansible.builtin.fail:
+    msg: '"failed to install VritualBox"'
   when: ((virtualbox_vboxdrv is failed) and (not virtualbox_role_debug|bool))

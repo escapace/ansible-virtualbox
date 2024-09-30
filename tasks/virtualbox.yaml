@@ -64,6 +64,8 @@
 - name: check if extension pack is already installed
   ansible.builtin.shell: VBoxManage list extpacks
   register: virtualbox_extpack_list
+  tags:
+    - molecule-idempotence-notest
 
 - name: download VirtualBox extension pack
   ansible.builtin.get_url:

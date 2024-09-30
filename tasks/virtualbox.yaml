@@ -47,6 +47,7 @@
     packages:
       - kernel-devel-{{ virtualbox_kernel_version.stdout }}
       - kernel-headers-{{ virtualbox_kernel_version.stdout }}
+  when: not virtualbox_role_debug|bool
 
 - name: install VirtualBox
   ansible.builtin.package:

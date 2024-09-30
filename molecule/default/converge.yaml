@@ -1,0 +1,7 @@
+---
+- name: converge
+  hosts: all
+  vars:
+    virtualbox_role_debug: true
+  roles:
+    - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"

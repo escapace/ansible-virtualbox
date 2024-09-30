@@ -1,7 +1,7 @@
 ---
 - name: install virtualbox dependencies
   ansible.builtin.package:
-    name: "{{ packages }}"
+    name: '{{ packages }}'
   vars:
     packages:
       - binutils
@@ -20,14 +20,15 @@
     dest: /etc/yum.repos.d/virtualbox.repo
     owner: root
     group: root
-    mode: "0644"
+    mode: '0644'
   register: virtualbox_repository
 
 - name: add virtualbox repository gpg key
   ansible.builtin.rpm_key:
     state: present
-    key: https://www.virtualbox.org/download/oracle_vbox.asc
+    key: https://www.virtualbox.org/download/oracle_vbox_2016.asc
 
+# uname -r | egrep -o '^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+'
 - name: get kernel version
   ansible.builtin.shell: |
     set -o pipefail
@@ -39,7 +40,7 @@
 
 - name: install kernel-devel and kernel-headers
   ansible.builtin.package:
-    name: "{{ packages }}"
+    name: '{{ packages }}'
     state: present
   vars:
     packages:
@@ -58,20 +59,20 @@
   register: virtualbox_vboxdrv
   ignore_errors: true
 
-- name: Check if extension pack is already installed
+- name: check if extension pack is already installed
   ansible.builtin.shell: VBoxManage list extpacks
   register: virtualbox_extpack_list
 
-- name: Download VirtualBox extension pack
+- name: download VirtualBox extension pack
   ansible.builtin.get_url:
     validate_certs: true
-    url: "{{ virtualbox_extension_pack_url }}"
+    url: '{{ virtualbox_extension_pack_url }}'
     dest: /tmp
-    mode: "0700"
+    mode: '0700'
   when: 'virtualbox_extpack_list.stdout == "Extension Packs: 0"'
   register: virtualbox_extension_pack
 
-- name: Install VirtualBox extension pack
+- name: install VirtualBox extension pack
   ansible.builtin.shell: |
     set -o pipefail
     echo y | VBoxManage extpack install --replace {{ virtualbox_extension_pack.dest }}
@@ -87,7 +88,7 @@
     dest: /etc/yum.repos.d/hashicorp.repo
     owner: root
     group: root
-    mode: "0644"
+    mode: '0644'
 
 - name: install vagrant
   ansible.builtin.dnf:

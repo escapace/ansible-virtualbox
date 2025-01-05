@@ -1,7 +1,7 @@
 ---
 - name: install virtualbox dependencies
   ansible.builtin.package:
-    name: '{{ packages }}'
+    name: "{{ packages }}"
   vars:
     packages:
       - binutils
@@ -20,7 +20,7 @@
     dest: /etc/yum.repos.d/virtualbox.repo
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   register: virtualbox_repository
 
 - name: add virtualbox repository gpg key
@@ -40,7 +40,7 @@
 
 - name: install kernel-devel and kernel-headers
   ansible.builtin.dnf:
-    name: '{{ packages }}'
+    name: "{{ packages }}"
     state: present
     update_cache: true
   vars:
@@ -70,9 +70,9 @@
 - name: download VirtualBox extension pack
   ansible.builtin.get_url:
     validate_certs: true
-    url: '{{ virtualbox_extension_pack_url }}'
+    url: "{{ virtualbox_extension_pack_url }}"
     dest: /tmp
-    mode: '0700'
+    mode: "0700"
   when: 'virtualbox_extpack_list.stdout == "Extension Packs: 0"'
   register: virtualbox_extension_pack
   tags:
@@ -96,7 +96,7 @@
     dest: /etc/yum.repos.d/hashicorp.repo
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
 
 - name: install vagrant
   ansible.builtin.dnf:
